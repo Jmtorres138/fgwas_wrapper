@@ -15,11 +15,11 @@ from math import floor
 import moniter_rescomp_jobs
 
 # globals
-fgwas = "/users/mccarthy/jmtorres/software/fgwas-0.3.6/bin/fgwas"
-home_dir = "path_to_directory/"
+fgwas = "/apps/well/fgwas/0.3.6/fgwas"
+home_dir = "/well/got2d/Matthias/Diagram_data/update_1000G_imputed_DIAGRAM_Data/for_FGWAS/better_attempt/Jason_test_wrapper/"
 in_dir=home_dir+"fgwas_input/"
 out_dir = home_dir + "fgwas_output/"
-input_file=in_dir+"fgwas_input_file_name.txt.gz"
+input_file=in_dir+"combined_E10_E6_E7_E8.case_contl.txt.gz"
 job_dir=home_dir+"jobs/"
 log_dir=home_dir+"logs/"
 if os.path.isdir(out_dir)==False:
@@ -28,7 +28,7 @@ if os.path.isdir(job_dir)==False:
     os.mkdir(job_dir)
 if os.path.isdir(log_dir)==False:
     os.mkdir(log_dir)
-start_index = 10 #0-based index of column in fgwas input file where annotations start
+start_index = 8 #0-based index of column in fgwas input file where annotations start
 
 def step1():
     '''
@@ -56,8 +56,9 @@ def step1():
 #$ -e %s%s.error
 #$ -o %s%s.out
 #$ -V
-
+echo "start time" `date`
 %s
+echo "end time" `date`
         ''' % (annot, log_dir,"job_"+annot,log_dir,"job_"+annot, command)
         fout.write(script)
         fout.close()
@@ -138,8 +139,9 @@ def step2(sig_list):
 #$ -e %s%s.error
 #$ -o %s%s.out
 #$ -V
-
+echo "start time" `date`
 %s
+echo "end time" `date`
         ''' % (top_annot+"-"+annot, log_dir,"job_"+top_annot+"-"+annot,
         log_dir,"job_"+top_annot+"-"+annot, command)
         fout.write(script)
@@ -186,8 +188,9 @@ def run_models(fixed_list,eval_list):
 #$ -e %s%s.error
 #$ -o %s%s.out
 #$ -V
-
+echo "start time" `date`
 %s
+echo "end time" `date`
         ''' % (fixed+"-"+annot, log_dir,"job_"+fixed+"-"+annot,
         log_dir,"job_"+fixed+"-"+annot, command)
         fout.write(script)
@@ -265,12 +268,13 @@ def step4(model_list):
 #$ -N job_%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
-#$ -q long.qc
+#$ -q short.qc
 #$ -e %s%s.error
 #$ -o %s%s.out
 #$ -V
-
+echo "start time" `date`
 %s
+echo "end time" `date`
         ''' % (model_name+"-p"+p, log_dir,"job_"+model_name+"-p"+p,
         log_dir,"job_"+model_name+"-p"+p, command)
         fout.write(script)
@@ -326,12 +330,13 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA"):
 #$ -N job_drop-%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
-#$ -q long.qc
+#$ -q short.qc
 #$ -e %s%s.error
 #$ -o %s%s.out
 #$ -V
-
+echo "start time" `date`
 %s
+echo "end time" `date`
         ''' % (mod, log_dir,"job_drop-"+mod,
         log_dir,"job_drop-"+mod, command)
         fout.write(script)
