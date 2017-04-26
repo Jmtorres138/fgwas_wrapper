@@ -303,15 +303,19 @@ echo "end time" `date`
     print "Optimal parameter value evaluated: %s"   % best[0]
     return best
 
-def step5(model_list,best_p,best_llk,best_dropped_mod="NA"):
+def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]):
     print "Test dropping each annotation from the model, using cross-validation likelihood"
     print "Keep dropping annotations as long as the cross-validation likelihood keeps increasing"
+    if len(previously_dropped) > 0:
+        dropped = "+".join(previously_dropped) + "+"
+    else:
+        dropped = ""
     for mod in model_list:
         keep_list = list(model_list)
         dropped_mod = mod
         keep_list.remove(mod)
         keep_mods = "+".join(keep_list)
-        job_file = job_dir+"job_drop-"+mod+".sh"
+        job_file = job_dir+"job_drop-"dropped+mod+".sh"
         fout=open(job_file,'w')
         if "distance_tss" in keep_list:
             keep_list.remove("distance_tss")
@@ -386,7 +390,7 @@ def wrapper():
     sig_list = sig_annot_list() # limiting to only annotations that didn't overlap zero (log2FE) from single analysis
 
     sys.stdout.write("Step 2: Finding the single best annotation to seed the model\n")
-    top = step2(sig_list) 
+    top = step2(sig_list)
     top_annot, top_val = top[0], top[1]
     print "Top annotation: " + str(top_annot) + " Value: " + str(top_val)
 
@@ -410,10 +414,13 @@ def wrapper():
     best_p, best_llk = step4(model_list)
 
     sys.stdout.write("Step 5: Test dropping annotations from the model and evaluating cross-valitated likelihood\n")
-    mod,llk,keep,status = step5(model_list,best_p,best_llk)
+    dropped_mods = []
+    mod,llk,keep,status = step5(model_list,best_p,best_llk,previously_dropped=[])
+    dropped_mods.append(mod)
     while status == False:
         model_list.remove(mod)
-        mod,llk,keep,status = step5(model_list,best_p,best_llk)
+        mod,llk,keep,status = step5(model_list,best_p,best_llk,previously_dropped=dropped_mods)
+        dropped_mods.append(mod)
 
     sys.stdout.write("Step 6: Determine the best cross-validated model\n")
     print "Here are the annotations in the best model:"
