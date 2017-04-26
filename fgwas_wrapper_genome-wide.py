@@ -315,7 +315,7 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
         dropped_mod = mod
         keep_list.remove(mod)
         keep_mods = "+".join(keep_list)
-        job_file = job_dir+"job_drop-"dropped+mod+".sh"
+        job_file = job_dir+"job_drop-"+dropped+mod+".sh"
         fout=open(job_file,'w')
         if "distance_tss" in keep_list:
             keep_list.remove("distance_tss")
@@ -341,12 +341,12 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (mod, log_dir,"job_drop-"+mod,
-        log_dir,"job_drop-"+mod, command)
+        ''' % (mod, log_dir,"job_drop-"+dropped+mod,
+        log_dir,"job_drop-"+dropped+mod, command)
         fout.write(script)
         fout.close()
         call = ["qsub", job_file]
-        out_path = out_dir+"drop-"+mod+".ridgeparams"
+        out_path = out_dir+"drop-"+dropped+mod+".ridgeparams"
         if os.path.exists(out_path) == False:
             sp.check_call(call)
         if os.path.exists(out_path) == True and os.stat(out_path).st_size == 0:
