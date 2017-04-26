@@ -413,7 +413,7 @@ def wrapper():
     mod,llk,keep,status = step5(model_list,best_p,best_llk)
     while status == False:
         model_list.remove(mod)
-        mod,llk,keep,status = step5_6_sequential(model_list,best_p,best_llk)
+        mod,llk,keep,status = step5(model_list,best_p,best_llk)
 
     sys.stdout.write("Step 6: Determine the best cross-validated model\n")
     print "Here are the annotations in the best model:"
