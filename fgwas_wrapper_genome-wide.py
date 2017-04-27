@@ -324,11 +324,11 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
                             "-dists", "distance_tss"+":"+home_dir+"dist_model",
                             "-w", model_sub, #keep_mods,
                             "-p", best_p, "-xv", "-print",
-                            "-o", out_dir+"drop-"+mod]
+                            "-o", out_dir+"drop-"+dropped+mod]
         else:
             command_list = [fgwas, "-i", input_file, "-cc",
                             "-w", keep_mods, "-p", best_p, "-xv", "-print",
-                            "-o", out_dir+"drop-"+mod]
+                            "-o", out_dir+"drop-"+dropped+mod]
         command = " ".join(command_list)
         script='''
 #$ -N job_drop-%s
@@ -341,7 +341,7 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (mod, log_dir,"job_drop-"+dropped+mod,
+        ''' % (dropped+mod, log_dir,"job_drop-"+dropped+mod,
         log_dir,"job_drop-"+dropped+mod, command)
         fout.write(script)
         fout.close()
@@ -356,7 +356,7 @@ echo "end time" `date`
     print "The best likelihood in full model: %s" % str(best_llk)
     track_dic = {}
     for mod in model_list:
-        fin = open(out_dir+"drop-"+mod+".ridgeparams",'r')
+        fin = open(out_dir+"drop-"+dropped+mod+".ridgeparams",'r')
         line_list = fin.readlines()
         fin.close()
         line = line_list[-1]
