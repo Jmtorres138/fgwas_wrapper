@@ -425,7 +425,7 @@ def wrapper():
     sys.stdout.write("Step 6: Determine the best cross-validated model\n")
     print "Here are the annotations in the best model:"
     print model_list
-    print "Prefix of files for best model: %s" % (out_dir+"drop-"+mod)
+    print "Prefix of files for best model: %s" % (out_dir+"drop-"+"+".join(dropped_mods))
 
 def main():
     wrapper()
