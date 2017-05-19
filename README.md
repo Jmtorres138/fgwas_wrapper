@@ -1,10 +1,11 @@
 # build fgwas input file (01 script) 
 
-## **Note:** You must manually format your gwas data file into a "bed" type format with no header and the first 3 columns must be chromosome, start position, end position, the rest you can include to fit your needs (i.e. whole gwas or regions of interest like credible sets) 
+## **Note:** You must manually format your gwas data file into a "bed" type format with no header and the first 3 columns must be chromosome, start position, end position, the rest you can include to fit your needs (i.e. whole gwas or regions of interest i.e. credible sets) 
 
 Here is an example of the format:
 
 chr1	693730	693731	chr1:693731	0.8795	0.08	0.9362	47440	463435
+
 chr1	729678	729679	chr1:729679	0.1663	-0.28	0.7794	47291	461541
 ...
 
