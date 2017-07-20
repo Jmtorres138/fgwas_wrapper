@@ -18,7 +18,7 @@ array_job_regex = '^%s\[[0-9]\+\]'
 
 def get_job_ids(jobid_regex):
     # Jason Matthew Torres
-    qstat_p = Popen('qstat -t | grep "%s" | cut -f 1 -d " "'%jobid_regex,shell=True,stdout=PIPE)
+    qstat_p = Popen('qstat -t | grep "%s" | cut -f 4 -d " "'%jobid_regex,shell=True,stdout=PIPE)
     stdout, stderr = qstat_p.communicate()
     job_list = stdout.split("\n")
     job_list = [x for x in job_list if len(x)>0]
@@ -39,7 +39,7 @@ def is_job_done(jobid) :
     if array_match is not None :
         idnum, rest = array_match.groups()
         jobid_regex = array_job_regex%idnum
-        qstat_p = Popen('qstat -t | grep "%s" | cut -f 1 -d " "'%jobid_regex,shell=True,stdout=PIPE)
+        qstat_p = Popen('qstat -t | grep "%s" | cut -f 4 -d " "'%jobid_regex,shell=True,stdout=PIPE)
         stdout, stderr = qstat_p.communicate()
         done = len(stdout) == 0
 
