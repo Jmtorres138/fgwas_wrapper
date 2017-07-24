@@ -15,11 +15,11 @@ from math import floor
 import moniter_rescomp_jobs
 
 # globals
-fgwas = "/apps/well/fgwas/0.3.6/fgwas"
-home_dir = "/well/got2d/Matthias/Diagram_data/update_1000G_imputed_DIAGRAM_Data/for_FGWAS/better_attempt/Jason_test_wrapper/"
+fgwas = "LD_LIBRARY_PATH=/apps/well/gsl/2.2.1-gcc4.9.3/lib /apps/well/fgwas/0.3.6/fgwas"
+home_dir = "path_to_working_directory/"
 in_dir=home_dir+"fgwas_input/"
 out_dir = home_dir + "fgwas_output/"
-input_file=in_dir+"combined_E10_E6_E7_E8.case_contl.txt.gz"
+input_file=in_dir+"fgwas_input_file.fgwas.gz" # Optional: Run 01.1 script and use this for abbreviated annotations: in_dir+"fgwas_input_file.renamed.fgwas.gz"
 job_dir=home_dir+"jobs/"
 log_dir=home_dir+"logs/"
 if os.path.isdir(out_dir)==False:
@@ -28,7 +28,7 @@ if os.path.isdir(job_dir)==False:
     os.mkdir(job_dir)
 if os.path.isdir(log_dir)==False:
     os.mkdir(log_dir)
-start_index = 8 #0-based index of column in fgwas input file where annotations start
+start_index = 9 #0-based index of column in fgwas input file where annotations start
 
 def step1():
     '''
@@ -55,7 +55,6 @@ def step1():
 #$ -q short.qc
 #$ -e %s%s.error
 #$ -o %s%s.out
-#$ -V
 echo "start time" `date`
 %s
 echo "end time" `date`
@@ -138,7 +137,6 @@ def step2(sig_list):
 #$ -q short.qc
 #$ -e %s%s.error
 #$ -o %s%s.out
-#$ -V
 echo "start time" `date`
 %s
 echo "end time" `date`
@@ -187,7 +185,6 @@ def run_models(fixed_list,eval_list):
 #$ -q short.qc
 #$ -e %s%s.error
 #$ -o %s%s.out
-#$ -V
 echo "start time" `date`
 %s
 echo "end time" `date`
@@ -271,7 +268,6 @@ def step4(model_list):
 #$ -q short.qc
 #$ -e %s%s.error
 #$ -o %s%s.out
-#$ -V
 echo "start time" `date`
 %s
 echo "end time" `date`
@@ -314,6 +310,10 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
         keep_list = list(model_list)
         dropped_mod = mod
         keep_list.remove(mod)
+        if len(keep_list) <= 15:
+            qc = "short.qc"
+        else:
+            qc = "long.qc"
         keep_mods = "+".join(keep_list)
         job_file = job_dir+"job_drop-"+dropped+mod+".sh"
         fout=open(job_file,'w')
@@ -334,14 +334,13 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
 #$ -N job_drop-%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
-#$ -q short.qc
+#$ -q %s
 #$ -e %s%s.error
 #$ -o %s%s.out
-#$ -V
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (dropped+mod, log_dir,"job_drop-"+dropped+mod,
+        ''' % (dropped+mod, qc, log_dir,"job_drop-"+dropped+mod,
         log_dir,"job_drop-"+dropped+mod, command)
         fout.write(script)
         fout.close()
@@ -425,7 +424,33 @@ def wrapper():
     sys.stdout.write("Step 6: Determine the best cross-validated model\n")
     print "Here are the annotations in the best model:"
     print model_list
-    print "Prefix of files for best model: %s" % (out_dir+"drop-"+"+".join(dropped_mods))
+    pre_list = [x for x in dropped_mods if x != 'NA']
+    prefix = out_dir+"drop-"+"+".join(pre_list)
+    print "Prefix of files for best model: %s" % (prefix)
+    print "Copying best model input files with prefix: 'best-joint-model'"
+    command = ["cp",prefix+".llk", out_dir+"best-joint-model.llk"]
+    sp.check_call(" ".join(command),shell=True)
+    command = ["cp",prefix+".params", out_dir+"best-joint-model.params"]
+    sp.check_call(" ".join(command),shell=True)
+    command = ["cp",prefix+".ridgeparams", out_dir+"best-joint-model.ridgeparams"]
+    sp.check_call(" ".join(command),shell=True)
+    command = ["cp",prefix+".segbfs.gz", out_dir+"best-joint-model.segbfs.gz"]
+    sp.check_call(" ".join(command),shell=True)
+    command = ["cp",prefix+".bfs.gz", out_dir+"best-joint-model.bfs.gz"]
+    sp.check_call(" ".join(command),shell=True)
+    print ("Removing all intermediate files...")
+    all_files = os.listdir(out_dir)
+    intermed_files1 = [x for x in all_files if "+" in x]
+    intermed_files2 = [x for x in all_files if "drop" in x]
+    intermed_files = list(set(intermed_files1 + intermed_files2))
+    print len(all_files)
+    print len(intermed_files)
+    keep_files = list(set(all_files).difference(intermed_files))
+    print keep_files
+    print len(keep_files)
+    for f in intermed_files:
+        command = ["rm",out_dir+f]
+        sp.check_call(" ".join(command),shell=True)
 
 def main():
     wrapper()
