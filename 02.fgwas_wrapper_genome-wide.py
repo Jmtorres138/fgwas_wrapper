@@ -51,7 +51,7 @@ def step1():
         command = " ".join(command_list)
         # removed #$ -V from script
         script='''
-#$ -N adi_%s
+#$ -N %s%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
 #$ -q short.qc
@@ -61,7 +61,7 @@ def step1():
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (annot, log_dir,job_prefix+annot,log_dir,job_prefix+annot, command)
+        ''' % (job_prefix,annot, log_dir,job_prefix+annot,log_dir,job_prefix+annot, command)
         fout.write(script)
         fout.close()
         call = ["qsub", job_file]
@@ -134,7 +134,7 @@ def step2(sig_list):
                             top_annot+"+"+annot, "-o", out_dir+top_annot+"+"+annot]
         command = " ".join(command_list)
         script='''
-#$ -N adi_%s
+#$ -N %s%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
 #$ -q short.qc
@@ -143,7 +143,7 @@ def step2(sig_list):
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (top_annot+"-"+annot, log_dir,job_prefix+top_annot+"-"+annot,
+        ''' % (job_prefix,top_annot+"-"+annot, log_dir,job_prefix+top_annot+"-"+annot,
         log_dir,job_prefix+top_annot+"-"+annot, command)
         fout.write(script)
         fout.close()
@@ -182,7 +182,7 @@ def run_models(fixed_list,eval_list):
                             fixed+"+"+annot, "-o", out_dir+fixed+"+"+annot]
         command = " ".join(command_list)
         script='''
-#$ -N adi_%s
+#$ -N %s%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
 #$ -q short.qc
@@ -191,7 +191,7 @@ def run_models(fixed_list,eval_list):
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (fixed+"-"+annot, log_dir,job_prefix+fixed+"-"+annot,
+        ''' % (job_prefix,fixed+"-"+annot, log_dir,job_prefix+fixed+"-"+annot,
         log_dir,job_prefix+fixed+"-"+annot, command)
         fout.write(script)
         fout.close()
@@ -265,7 +265,7 @@ def step4(model_list):
                             "-o", out_dir+model+"-p"+p]
         command = " ".join(command_list)
         script='''
-#$ -N adi_%s
+#$ -N %s%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
 #$ -q long.qc
@@ -274,7 +274,7 @@ def step4(model_list):
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (model_name+"-p"+p, log_dir,job_prefix+model_name+"-p"+p,
+        ''' % (job_prefix,model_name+"-p"+p, log_dir,job_prefix+model_name+"-p"+p,
         log_dir,job_prefix+model_name+"-p"+p, command)
         fout.write(script)
         fout.close()
@@ -334,7 +334,7 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
                             "-o", out_dir+"drop-"+dropped+mod]
         command = " ".join(command_list)
         script='''
-#$ -N adi_drop-%s
+#$ -N %sdrop-%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
 #$ -q %s
@@ -343,7 +343,7 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (dropped+mod, qc, log_dir,"adi_drop-"+dropped+mod,
+        ''' % (job_prefix,dropped+mod, qc, log_dir,"adi_drop-"+dropped+mod,
         log_dir,"adi_drop-"+dropped+mod, command)
         fout.write(script)
         fout.close()
