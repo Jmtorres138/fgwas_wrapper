@@ -29,6 +29,7 @@ if os.path.isdir(job_dir)==False:
 if os.path.isdir(log_dir)==False:
     os.mkdir(log_dir)
 start_index = 9 #0-based index of column in fgwas input file where annotations start
+job_prefix = "job_" # change this if you have concurrent runs of the fgwas_wrapper (for example, running wrapper seperately across tissues) 
 
 def step1():
     '''
@@ -39,7 +40,7 @@ def step1():
     annot_list = fin.readline().strip().split()[start_index:]
     fin.close()
     for annot in annot_list:
-        job_file = job_dir+"job_"+annot+".sh"
+        job_file = job_dir+job_prefix+annot+".sh"
         fout=open(job_file,'w')
         if annot == "distance_tss":
             command_list = [fgwas, "-i", input_file, "-cc",  "-dists",
@@ -48,17 +49,19 @@ def step1():
             command_list = [fgwas, "-i", input_file, "-cc",  "-w",
                             annot, "-o", out_dir+annot]
         command = " ".join(command_list)
+        # removed #$ -V from script
         script='''
-#$ -N job_%s
+#$ -N adi_%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
 #$ -q short.qc
 #$ -e %s%s.error
 #$ -o %s%s.out
+
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (annot, log_dir,"job_"+annot,log_dir,"job_"+annot, command)
+        ''' % (annot, log_dir,job_prefix+annot,log_dir,job_prefix+annot, command)
         fout.write(script)
         fout.close()
         call = ["qsub", job_file]
@@ -67,7 +70,7 @@ echo "end time" `date`
             sp.check_call(call)
         if os.path.exists(out_path) == True and os.stat(out_path).st_size == 0:
             sp.check_call(call)
-    job_list = moniter_rescomp_jobs.get_job_ids("job_")
+    job_list = moniter_rescomp_jobs.get_job_ids(job_prefix)
     moniter_rescomp_jobs.wait_for_jobs(job_list)
 
 def sig_annot_list():
@@ -120,7 +123,7 @@ def step2(sig_list):
     for annot in sorted_annot[1:]:
         annot = annot[0]
         #print annot
-        job_file = job_dir+"job_"+top_annot+"-"+annot+".sh"
+        job_file = job_dir+job_prefix+top_annot+"-"+annot+".sh"
         fout=open(job_file,'w')
         if annot == "distance_tss":
             command_list = [fgwas, "-i", input_file, "-cc",
@@ -131,7 +134,7 @@ def step2(sig_list):
                             top_annot+"+"+annot, "-o", out_dir+top_annot+"+"+annot]
         command = " ".join(command_list)
         script='''
-#$ -N job_%s
+#$ -N adi_%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
 #$ -q short.qc
@@ -140,8 +143,8 @@ def step2(sig_list):
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (top_annot+"-"+annot, log_dir,"job_"+top_annot+"-"+annot,
-        log_dir,"job_"+top_annot+"-"+annot, command)
+        ''' % (top_annot+"-"+annot, log_dir,job_prefix+top_annot+"-"+annot,
+        log_dir,job_prefix+top_annot+"-"+annot, command)
         fout.write(script)
         fout.close()
         call = ["qsub", job_file]
@@ -150,7 +153,7 @@ echo "end time" `date`
             sp.check_call(call)
         if os.path.exists(out_path) == True and os.stat(out_path).st_size == 0:
             sp.check_call(call)
-    job_list = moniter_rescomp_jobs.get_job_ids("job_")
+    job_list = moniter_rescomp_jobs.get_job_ids(job_prefix)
     moniter_rescomp_jobs.wait_for_jobs(job_list)
     top = [top_annot,top_val]
     return(top)
@@ -161,7 +164,7 @@ def run_models(fixed_list,eval_list):
     fixed_name = "-".join(fixed_list)
     fixed = "+".join(fixed_list)
     for annot in eval_list:
-        job_file = job_dir+"job_"+fixed_name+"-"+annot+".sh"
+        job_file = job_dir+job_prefix+fixed_name+"-"+annot+".sh"
         fout=open(job_file,'w')
         if annot == "distance_tss":
             command_list = [fgwas, "-i", input_file, "-cc",
@@ -179,7 +182,7 @@ def run_models(fixed_list,eval_list):
                             fixed+"+"+annot, "-o", out_dir+fixed+"+"+annot]
         command = " ".join(command_list)
         script='''
-#$ -N job_%s
+#$ -N adi_%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
 #$ -q short.qc
@@ -188,8 +191,8 @@ def run_models(fixed_list,eval_list):
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (fixed+"-"+annot, log_dir,"job_"+fixed+"-"+annot,
-        log_dir,"job_"+fixed+"-"+annot, command)
+        ''' % (fixed+"-"+annot, log_dir,job_prefix+fixed+"-"+annot,
+        log_dir,job_prefix+fixed+"-"+annot, command)
         fout.write(script)
         fout.close()
         call = ["qsub", job_file]
@@ -207,7 +210,7 @@ def step3(top_annot, top_val,sig_list):
     annot_list = [x for x in annot_list if x not in top_annot_list]
     out_list = [top_annot+"+"+ x for x in annot_list]
     run_models(top_annot_list,annot_list)
-    job_list = moniter_rescomp_jobs.get_job_ids("job_")
+    job_list = moniter_rescomp_jobs.get_job_ids(job_prefix)
     moniter_rescomp_jobs.wait_for_jobs(job_list)
     track_dic = {}
     for name in out_list:
@@ -246,7 +249,7 @@ def step4(model_list):
     model_name = "-".join(model_list)
     model = "+".join(model_list)
     for p in p_list:
-        job_file = job_dir+"job_"+model_name+"-"+p+".sh"
+        job_file = job_dir+job_prefix+model_name+"-"+p+".sh"
         fout=open(job_file,'w')
         if "distance_tss" in model_list:
             temp_list = list(model_list)
@@ -262,17 +265,17 @@ def step4(model_list):
                             "-o", out_dir+model+"-p"+p]
         command = " ".join(command_list)
         script='''
-#$ -N job_%s
+#$ -N adi_%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
-#$ -q short.qc
+#$ -q long.qc
 #$ -e %s%s.error
 #$ -o %s%s.out
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (model_name+"-p"+p, log_dir,"job_"+model_name+"-p"+p,
-        log_dir,"job_"+model_name+"-p"+p, command)
+        ''' % (model_name+"-p"+p, log_dir,job_prefix+model_name+"-p"+p,
+        log_dir,job_prefix+model_name+"-p"+p, command)
         fout.write(script)
         fout.close()
         call = ["qsub", job_file]
@@ -281,7 +284,7 @@ echo "end time" `date`
             sp.check_call(call)
         if os.path.exists(out_path) == True and os.stat(out_path).st_size == 0:
             sp.check_call(call)
-    job_list = moniter_rescomp_jobs.get_job_ids("job_")
+    job_list = moniter_rescomp_jobs.get_job_ids(job_prefix)
     moniter_rescomp_jobs.wait_for_jobs(job_list)
     print "Finding best parameter value..."
     track_dic = {}
@@ -315,7 +318,7 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
         else:
             qc = "long.qc"
         keep_mods = "+".join(keep_list)
-        job_file = job_dir+"job_drop-"+dropped+mod+".sh"
+        job_file = job_dir+"adi_drop-"+dropped+mod+".sh"
         fout=open(job_file,'w')
         if "distance_tss" in keep_list:
             keep_list.remove("distance_tss")
@@ -331,7 +334,7 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
                             "-o", out_dir+"drop-"+dropped+mod]
         command = " ".join(command_list)
         script='''
-#$ -N job_drop-%s
+#$ -N adi_drop-%s
 #$ -pe shmem 1
 #$ -P mccarthy.prjc
 #$ -q %s
@@ -340,8 +343,8 @@ def step5(model_list,best_p,best_llk,best_dropped_mod="NA",previously_dropped=[]
 echo "start time" `date`
 %s
 echo "end time" `date`
-        ''' % (dropped+mod, qc, log_dir,"job_drop-"+dropped+mod,
-        log_dir,"job_drop-"+dropped+mod, command)
+        ''' % (dropped+mod, qc, log_dir,"adi_drop-"+dropped+mod,
+        log_dir,"adi_drop-"+dropped+mod, command)
         fout.write(script)
         fout.close()
         call = ["qsub", job_file]
@@ -350,7 +353,7 @@ echo "end time" `date`
             sp.check_call(call)
         if os.path.exists(out_path) == True and os.stat(out_path).st_size == 0:
             sp.check_call(call)
-    job_list = moniter_rescomp_jobs.get_job_ids("job_")
+    job_list = moniter_rescomp_jobs.get_job_ids(job_prefix)
     moniter_rescomp_jobs.wait_for_jobs(job_list)
     print "The best likelihood in full model: %s" % str(best_llk)
     track_dic = {}
@@ -450,7 +453,7 @@ def wrapper():
     print len(keep_files)
     for f in intermed_files:
         command = ["rm",out_dir+f]
-        sp.check_call(" ".join(command),shell=True)
+        #sp.check_call(" ".join(command),shell=True)
 
 def main():
     wrapper()
