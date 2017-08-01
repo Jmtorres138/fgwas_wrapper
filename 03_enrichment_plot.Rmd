@@ -18,15 +18,15 @@ library("data.table")
 library("ggplot2")
 library("gridExtra")
 
-serv.dir <- "/Users/jtorres/FUSE/"
-fgwas.dir <- serv.dir %&% "projects/t2d-integration/fgwas/diagram_hrc/diamante-euro-manuscript/"
+serv.dir <- "path_to_directory_on_server" # Used when working from Rstudio locally but mounted to a server file system (e.g. MacOX-Fuse) 
+fgwas.dir <- serv.dir %&% "path_to_fgwas_direcotry"
 fgwas.out.dir <- fgwas.dir %&% "fgwas_output/"
 best.joint.model.file.prefix <- fgwas.out.dir %&% "best-joint-model"
 
-my.title <- "DIAGRAM (HRC Imputation)"
-output.prefix <- "DIAGRAM-gwas"
+my.title <- "My Title"
+output.prefix <- "my-analysis"
 
-annotation.keyfile <- fgwas.dir %&% "plot-key.csv"# Optional: Specifiy if you have a tab-delimited txt file with annotation names (as they appear in the fgwas input file) on the left column and plotting names on the right column, column names should be Name and PlotName, otherwise set to NULL
+annotation.keyfile <- NULL # fgwas.dir %&% "plot-key.csv"# Optional: Specifiy if you have a comma-delimited csv file with annotation names (as they appear in the fgwas input file) on the left column and plotting names on the right column, column names should be Name and PlotName, otherwise set to NULL
 if (!is.null(annotation.keyfile)){
   key.df <- fread(annotation.keyfile,sep=",",sep2=" ")
 }
