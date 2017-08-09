@@ -30,7 +30,10 @@ def rename_annots(input_file,output_file):
     annot_list = []
     for a in head_list[start_index:]:
         num += 1
-        key = "A"+str(num)
+        if a=="distance_tss":
+            key = a
+        else:
+            key = "A"+str(num)
         annot_list.append(key)
         keyfile.write("\t".join([key,a])+"\n")
     keyfile.close()
