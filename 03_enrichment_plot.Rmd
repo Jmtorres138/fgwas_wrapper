@@ -109,6 +109,8 @@ build_param_best_df <- function(pre,name.vec=NULL){
   #}
   if (!is.null(annotation.keyfile)){
     out.df <- update_names(param.df,key.df)
+  } else {
+    out.df <- param.df
   }
   return(out.df)
 }
