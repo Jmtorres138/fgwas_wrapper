@@ -257,11 +257,11 @@ def step4(model_list):
             model_sub = "+".join(temp_list)
             command_list = [fgwas, "-i", input_file, "-cc",
                             "-dists", "distance_tss"+":"+home_dir+"dist_model",
-                            "-w", model_sub, "-p", p, "-xv", "-print", "-onlyp",
+                            "-w", model_sub, "-p", p, "-xv", "-print",
                             "-o", out_dir+model+"-p"+p]
         else:
             command_list = [fgwas, "-i", input_file, "-cc",  "-w",
-                            model, "-p", p, "-xv", "-print", "-onlyp",
+                            model, "-p", p, "-xv", "-print",
                             "-o", out_dir+model+"-p"+p]
         command = " ".join(command_list)
         script='''
@@ -429,7 +429,10 @@ def wrapper():
     print "Here are the annotations in the best model:"
     print model_list
     pre_list = [x for x in dropped_mods if x != 'NA']
-    prefix = out_dir+"drop-"+"+".join(pre_list)
+    if (len(pre_list)>0) == False:
+        prefix = out_dir + "+".join(model_list)+"-p"+str(best_p)
+    else:
+        prefix = out_dir+"drop-"+"+".join(pre_list)
     print "Prefix of files for best model: %s" % (prefix)
     print "Copying best model input files with prefix: 'best-joint-model'"
     command = ["cp",prefix+".llk", out_dir+"best-joint-model.llk"]
