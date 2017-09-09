@@ -9,7 +9,7 @@ import sys,os,gzip
 import subprocess as sp
 
 # globals
-bedtools = "/apps/well/bedtools/2.24.0/bedtools" # intersect -a test.bed -b TFBS.bed -wb > mytest.bed"
+bedtools = "/apps/well/bedtools/2.24.0/bedtools"
 cur_dir = "path_to_current_directory/"
 input_dir = cur_dir + "fgwas_input/"
 fgwas_head_list = ["CHR","POS0","POS","SNPID","F","Z","PVAL","NCASE","NCONTROL"] # fgwas field names for gwas columns
